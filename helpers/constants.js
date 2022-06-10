@@ -2,9 +2,10 @@ export const ROUTES = {
     home: '/',
     auth: '/auth',
     login: '/login',
-    user: '/login',
+    user: '/user',
     register: '/register',
     config: '/config',
     budgets: '/budgets',
     categories: '/categories',
+    api: '/api',
 };

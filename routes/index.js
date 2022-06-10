@@ -2,6 +2,7 @@ import express from 'express';
 
 import { requestLogger } from '../middlewares/requestLogger.js';
 import auth from './auth/auth.routes.js';
+import user from './user/user.routes.js';
 import { ROUTES } from '../helpers/constants.js';
 
 const routes = express.Router();
@@ -14,6 +15,7 @@ routes.get(ROUTES.home, (req, res) => {
 
 // Add next api routes here
 // routes.use(ROUTES.login, {});
-routes.use(ROUTES.auth, auth);
+routes.use(`${ROUTES.api}${ROUTES.auth}`, auth);
+routes.use(ROUTES.api, user);
 
 export default routes;

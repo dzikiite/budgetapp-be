@@ -27,7 +27,8 @@ export const registerController = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({
+    // TODO: Exclude hashed password from response
+    res.json({
         success: true,
         user,
     });
@@ -46,13 +47,13 @@ export const loginController = async (req, res) => {
     }
 
     if (await bcrypt.compare(password, user.password)) {
-        const token = generateToken(JSON.stringify(user));
+        const token = generateToken(JSON.stringify(user.user_id));
 
         user.token = token;
 
         await user.save();
 
-        return res.status(200).json({
+        return res.json({
             success: true,
             token: user.token,
         });
