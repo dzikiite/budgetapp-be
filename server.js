@@ -6,6 +6,7 @@ import db from './config/db.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { setModelsRelations } from './helpers/setModelsRelations.js';
 import { ROUTES } from './helpers/constants.js';
 
 const PORT = process.env.PORT || 8000;
@@ -17,6 +18,9 @@ app.use(bodyParser.json());
 app.use(ROUTES.home, routes);
 app.use(errorHandler);
 app.use(notFoundHandler);
+
+// Set sequelize model relations
+setModelsRelations();
 
 // Sync models with database tables
 db.sync({ alter: true });

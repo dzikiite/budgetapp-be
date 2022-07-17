@@ -7,5 +7,6 @@ export const ROUTES = {
     config: '/config',
     budgets: '/budgets',
     categories: '/categories',
+    subcategories: '/subcategories',
     api: '/api',
 };

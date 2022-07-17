@@ -42,7 +42,7 @@ export const userControllerUpdate = async (req, res) => {
 
     const updatedUser = await user.save();
 
-    // TODO: Exclue token from response
+    // TODO: Exclude token from response
     return res.json({
         success: true,
         user: updatedUser,
