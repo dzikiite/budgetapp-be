@@ -4,9 +4,10 @@ export const ROUTES = {
     login: '/login',
     user: '/user',
     register: '/register',
-    config: '/config',
     budgets: '/budgets',
     categories: '/categories',
     subcategories: '/subcategories',
     api: '/api',
+    outflows: '/outflows',
+    inflows: '/inflows',
 };

@@ -1,6 +1,7 @@
 import SubcategoryModel from '../models/subcategory.model.js';
 
 export const subcategoriesControllerGet = async (req, res) => {
+    // TODO: Check querying category is associated to authenticate user
     const { id: categoryId } = req.params;
 
     const subcategoriesData = await SubcategoryModel.findAll({
