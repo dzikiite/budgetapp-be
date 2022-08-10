@@ -7,6 +7,7 @@ import categories from './categories/categories.routes.js';
 import subcategories from './subcategories/subcategories.routes.js';
 import budgets from './budgets/budgets.routes.js';
 import inflows from './inflows/inflows.routes.js';
+import outflows from './outflows/outflows.routes.js';
 import { ROUTES } from '../helpers/constants.js';
 
 const routes = express.Router();
@@ -23,5 +24,6 @@ routes.use(ROUTES.api, categories);
 routes.use(ROUTES.api, subcategories);
 routes.use(ROUTES.api, budgets);
 routes.use(ROUTES.api, inflows);
+routes.use(ROUTES.api, outflows);
 
 export default routes;
