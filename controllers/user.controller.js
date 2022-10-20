@@ -1,17 +1,15 @@
-import UserModel from '../models/user.model.js';
+import prisma from '../prisma/prisma.js';
 
 export const userControllerGet = async (req, res) => {
     const { userId } = req;
 
-    const userData = await UserModel.findOne({
+    const user = await prisma.users.findUnique({
         where: { user_id: userId },
-        attributes: ['firstname', 'lastname', 'email', 'user_id'],
+        select: { firstname: true, lastname: true, email: true, user_id: true },
     });
 
-    const user = userData?.get({ plain: true });
-
     if (!user) {
-        return res.sendStatus(404).json({
+        return res.status(404).json({
             success: false,
             message: 'User not found',
         });
@@ -26,23 +24,24 @@ export const userControllerGet = async (req, res) => {
 export const userControllerUpdate = async (req, res) => {
     const { userId, body: userNewData } = req;
 
-    const user = await UserModel.findOne({ where: { user_id: userId } });
+    const user = await prisma.users.findUnique({ where: { user_id: userId } });
 
     if (!user) {
-        return res.sendStatus(404).json({
+        return res.status(404).json({
             success: false,
             message: 'User not found',
         });
     }
 
-    user.set({
-        ...user,
-        ...userNewData,
+    const updatedUser = await prisma.users.update({
+        where: { user_id: userId },
+        data: {
+            ...user,
+            ...userNewData,
+        },
+        select: { firstname: true, lastname: true, email: true, user_id: true },
     });
 
-    const updatedUser = await user.save();
-
-    // TODO: Exclude token from response
     return res.json({
         success: true,
         user: updatedUser,
@@ -53,7 +52,7 @@ export const userControllerDelete = async (req, res) => {
     // TODO: Validate password while account is deleting
     const { userId } = req;
 
-    const user = await UserModel.findOne({ where: { user_id: userId } });
+    const user = await prisma.users.findUnique({ where: { user_id: userId } });
 
     if (!user) {
         return res.status(404).json({
@@ -63,7 +62,9 @@ export const userControllerDelete = async (req, res) => {
     }
 
     try {
-        const deletedRow = await user.destroy();
+        const deletedRow = await prisma.users.delete({
+            where: { user_id: userId },
+        });
 
         if (deletedRow) {
             return res.json({
@@ -73,6 +74,7 @@ export const userControllerDelete = async (req, res) => {
         }
     } catch (err) {
         console.log('Error: ', err);
+
         return res.json({
             success: false,
             message: 'An error occured',

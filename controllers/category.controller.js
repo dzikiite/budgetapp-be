@@ -1,9 +1,9 @@
-import CategoryModel from '../models/category.model.js';
+import prisma from '../prisma/prisma.js';
 
 export const categoriesControllerGet = async (req, res) => {
     const { userId } = req;
 
-    const categoriesData = await CategoryModel.findAll({
+    const categoriesData = await prisma.categories.findMany({
         where: { user_id: userId },
     });
 
@@ -24,7 +24,7 @@ export const categoryControllerGet = async (req, res) => {
     const { userId } = req;
     const { id } = req.params;
 
-    const categoryData = await CategoryModel.findOne({
+    const categoryData = await prisma.categories.findUnique({
         where: { user_id: userId, category_id: id },
     });
 
@@ -45,25 +45,32 @@ export const categoryControllerPost = async (req, res) => {
     const { userId, body: newCategoryData } = req;
     const { category_name } = newCategoryData;
 
-    const duplicate = await CategoryModel.findOne({
-        where: { category_name, user_id: userId },
+    const user = await prisma.users.findUnique({
+        where: {
+            user_id: userId,
+        },
+        include: { categories: true },
     });
 
-    if (duplicate) {
+    if (
+        user.categories.some(
+            (category) => category.category_name === category_name
+        )
+    ) {
         res.status(400).json({
             success: false,
             message: 'There is a category with the same name',
         });
     }
 
-    const category = CategoryModel.build({
-        category_name,
-        user_id: userId,
+    const category = await prisma.categories.create({
+        data: {
+            category_name,
+            user_id: userId,
+        },
     });
 
-    await category.save();
-
-    res.json({
+    res.status(200).json({
         success: true,
         category,
     });
@@ -73,25 +80,32 @@ export const categoryControllerUpdate = async (req, res) => {
     const { userId, body: categoryNewData } = req;
     const { id } = req.params;
 
-    const category = await CategoryModel.findOne({
-        where: { category_id: id, user_id: userId },
+    const user = await prisma.users.findUnique({
+        where: { user_id: userId },
+        include: { categories: true },
     });
 
+    const category = user.categories.filter(
+        (category) => category.category_id === parseInt(id)
+    )?.[0];
+
     if (!category) {
-        return res.sendStatus(404).json({
+        return res.status(404).json({
             success: false,
             message: 'Category not found',
         });
     }
 
-    category.set({
-        ...category,
-        ...categoryNewData,
+    const updatedCategory = await prisma.categories.update({
+        where: {
+            category_id: category.category_id,
+        },
+        data: {
+            ...categoryNewData,
+        },
     });
 
-    const updatedCategory = await category.save();
-
-    return res.json({
+    return res.status(200).json({
         success: true,
         category: updatedCategory,
     });
@@ -101,19 +115,26 @@ export const categoryControllerDelete = async (req, res) => {
     const { userId } = req;
     const { id } = req.params;
 
-    const category = await CategoryModel.findOne({
-        where: { category_id: id, user_id: userId },
+    const user = await prisma.users.findUnique({
+        where: { user_id: userId },
+        include: { categories: true },
     });
 
+    const category = user.categories.filter(
+        (category) => category.category_id === parseInt(id)
+    )?.[0];
+
     if (!category) {
-        return res.sendStatus(404).json({
+        return res.status(404).json({
             success: false,
             message: 'Category not found',
         });
     }
 
     try {
-        const deletedRow = await category.destroy();
+        const deletedRow = await prisma.categories.delete({
+            where: { category_id: category.category_id },
+        });
 
         if (deletedRow) {
             return res.json({

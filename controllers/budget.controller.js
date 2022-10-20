@@ -1,9 +1,9 @@
-import BudgetModel from '../models/budget.model.js';
+import prisma from '../prisma/prisma.js';
 
 export const budgetsControllerGet = async (req, res) => {
     const { userId } = req;
 
-    const budgetsData = await BudgetModel.findAll({
+    const budgetsData = await prisma.budgets.findMany({
         where: { user_id: userId },
     });
 
@@ -24,7 +24,7 @@ export const budgetsControllerPost = async (req, res) => {
     const { userId, body: newBudgetData } = req;
     const { budget_name } = newBudgetData;
 
-    const duplicate = await BudgetModel.findOne({
+    const duplicate = await prisma.budgets.findUnique({
         where: { user_id: userId, budget_name },
     });
 
@@ -35,14 +35,12 @@ export const budgetsControllerPost = async (req, res) => {
         });
     }
 
-    const budget = BudgetModel.build({
+    const budget = await prisma.budgets.create({
         budget_name,
         total_amount: 0.0,
         rest_amount: 0.0,
         user_id: userId,
     });
-
-    await budget.save();
 
     res.json({
         success: true,
@@ -54,7 +52,7 @@ export const budgetControllerUpdate = async (req, res) => {
     const { userId, body: budgetNewData } = req;
     const { id } = req.params;
 
-    const budget = await BudgetModel.findOne({
+    const budget = await prisma.budgets.findUnique({
         where: { budget_id: id, user_id: userId },
     });
 
@@ -65,12 +63,13 @@ export const budgetControllerUpdate = async (req, res) => {
         });
     }
 
-    budget.set({
-        ...budget,
-        ...budgetNewData,
+    const updatedBudget = await prisma.budgets.update({
+        where: { budget_id: budget.id, user_id: userId },
+        data: {
+            ...budget,
+            ...budgetNewData,
+        },
     });
-
-    const updatedBudget = await budget.save();
 
     return res.json({
         success: true,
@@ -82,7 +81,7 @@ export const budgetControllerDelete = async (req, res) => {
     const { userId } = req;
     const { id } = req.params;
 
-    const budget = await BudgetModel.findOne({
+    const budget = await prisma.budgets.findUnique({
         where: { user_id: userId, budget_id: id },
     });
 
@@ -94,7 +93,9 @@ export const budgetControllerDelete = async (req, res) => {
     }
 
     try {
-        const deletedRow = await budget.destroy();
+        const deletedRow = await prisma.budgets.delete({
+            where: { user_id: userId, budget_id: id },
+        });
 
         if (deletedRow) {
             return res.json({

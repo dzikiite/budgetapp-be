@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model budgets {
+  budget_id    Int        @id @default(autoincrement())
+  budget_name  String
+  total_amount Float?     @default(0)
+  rest_amount  Float?     @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt()
+  user_id      Int?
+  users        users?     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  inflows      inflows[]
+  outflows     outflows[]
+}
+
+model categories {
+  category_id   Int             @id @default(autoincrement())
+  category_name String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
+  user_id       Int
+  users         users?          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  subcategories subcategories[]
+}
+
+model inflows {
+  budget_inflow_id Int      @id @default(autoincrement())
+  name             String?
+  amount           Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+  budget_id        Int?
+  budgets          budgets? @relation(fields: [budget_id], references: [budget_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model outflows {
+  budget_outflow_id Int            @id @default(autoincrement())
+  name              String?
+  amount            Float?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now()) @updatedAt
+  budget_id         Int?
+  subcategory_id    Int?
+  budgets           budgets?       @relation(fields: [budget_id], references: [budget_id])
+  subcategories     subcategories? @relation(fields: [subcategory_id], references: [subcategory_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model subcategories {
+  subcategory_id   Int         @id @default(autoincrement())
+  subcategory_name String
+  allocated_amount Float?      @default(0)
+  rest_amount      Float?      @default(0)
+  category_id      Int?
+  categories       categories? @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: Cascade)
+  outflows         outflows[]
+}
+
+model users {
+  user_id    Int          @id @default(autoincrement())
+  firstname  String
+  lastname   String
+  email      String       @unique
+  password   String
+  token      String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+  budgets    budgets[]
+  categories categories[]
+}
