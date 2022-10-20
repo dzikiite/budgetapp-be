@@ -5,8 +5,8 @@ import {
     subcategoriesControllerPost,
     subcategoriesControllerUpdate,
     subcategoriesControllerDelete,
-} from '../../controllers/subcategory.controller.js';
-import { authenticateToken } from '../../middlewares/authenticateToken.js';
+} from './subcategory-controller.js';
+import { authenticateToken } from '../../middlewares/authenticate-token.js';
 import { ROUTES } from '../../helpers/constants.js';
 
 const subcategories = express.Router();

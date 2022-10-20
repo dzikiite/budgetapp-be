@@ -1,11 +1,10 @@
 import express from 'express';
 
-import { requestLogger } from '../middlewares/requestLogger.js';
-import auth from './auth/auth.routes.js';
-import user from './user/user.routes.js';
-import categories from './categories/categories.routes.js';
-import subcategories from './subcategories/subcategories.routes.js';
-import budgets from './budgets/budgets.routes.js';
+import { requestLogger } from '../middlewares/request-logger.js';
+import { user, auth } from './user/user-routes.js';
+import categories from './category/categories-routes.js';
+import subcategories from './subcategory/subcategories-routes.js';
+import budgets from './budget/budgets-routes.js';
 import { ROUTES } from '../helpers/constants.js';
 
 const routes = express.Router();

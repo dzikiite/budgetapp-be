@@ -5,8 +5,8 @@ import {
     budgetsControllerPost,
     budgetControllerUpdate,
     budgetControllerDelete,
-} from '../../controllers/budget.controller.js';
-import { authenticateToken } from '../../middlewares/authenticateToken.js';
+} from './budget-controller.js';
+import { authenticateToken } from '../../middlewares/authenticate-token.js';
 import { ROUTES } from '../../helpers/constants.js';
 
 const budgets = express.Router();

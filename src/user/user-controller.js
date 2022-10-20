@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma.js';
+import prisma from '../../prisma/prisma.js';
 
 export const userControllerGet = async (req, res) => {
     const { userId } = req;

@@ -4,14 +4,16 @@ import {
     userControllerGet,
     userControllerUpdate,
     userControllerDelete,
-} from '../../controllers/user.controller.js';
-import { authenticateToken } from '../../middlewares/authenticateToken.js';
+} from './user-controller.js';
+import { registerController, loginController } from './auth-controller.js';
+import { authenticateToken } from '../../middlewares/authenticate-token.js';
 import { ROUTES } from '../../helpers/constants.js';
 
-const user = express.Router();
+export const user = express.Router();
+export const auth = express.Router();
 
 user.get(ROUTES.user, authenticateToken, userControllerGet);
 user.put(ROUTES.user, authenticateToken, userControllerUpdate);
 user.delete(ROUTES.user, authenticateToken, userControllerDelete);
-
-export default user;
+auth.post(ROUTES.register, registerController);
+auth.post(ROUTES.login, loginController);

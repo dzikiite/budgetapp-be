@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import 'dotenv/config';
 
-import routes from './routes/index.js';
+import routes from './src/routes.js';
 import { ROUTES } from './helpers/constants.js';
 
 const PORT = process.env.PORT || 8000;

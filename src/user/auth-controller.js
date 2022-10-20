@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-import prisma from '../prisma/prisma.js';
-import { generateToken } from '../helpers/generateToken.js';
+import prisma from '../../prisma/prisma.js';
 
 export const registerController = async (req, res) => {
     const { firstname, lastname, email, password } = req.body || {};
@@ -47,7 +47,10 @@ export const loginController = async (req, res) => {
     }
 
     if (await bcrypt.compare(password, user.password)) {
-        const token = generateToken(JSON.stringify(user.user_id));
+        const token = jwt.sign(
+            JSON.stringify(user.user_id),
+            process.env.JWT_SECRET
+        );
 
         const updatedUser = await prisma.users.update({
             where: { email },

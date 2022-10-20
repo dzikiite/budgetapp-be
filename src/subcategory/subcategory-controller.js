@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma.js';
+import prisma from '../../prisma/prisma.js';
 
 export const subcategoriesControllerGet = async (req, res) => {
     // TODO: Check querying category is associated to authenticate user

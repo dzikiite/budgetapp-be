@@ -6,8 +6,8 @@ import {
     categoryControllerPost,
     categoryControllerUpdate,
     categoryControllerDelete,
-} from '../../controllers/category.controller.js';
-import { authenticateToken } from '../../middlewares/authenticateToken.js';
+} from './category-controller.js';
+import { authenticateToken } from '../../middlewares/authenticate-token.js';
 import { ROUTES } from '../../helpers/constants.js';
 
 const categories = express.Router();
