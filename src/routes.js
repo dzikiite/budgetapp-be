@@ -1,18 +1,21 @@
 import express from 'express';
 
 import { requestLogger } from '../middlewares/request-logger.js';
-import { user, auth } from './user/user-routes.js';
-import categories from './category/categories-routes.js';
-import subcategories from './subcategory/subcategories-routes.js';
-import budgets from './budget/budgets-routes.js';
-import { ROUTES } from '../helpers/constants.js';
+import { user, auth } from './user/index.js';
+import categories from './category/index.js';
+import subcategories from './subcategory/index.js';
+import budgets from './budget/index.js';
+import { ROUTES, HTTP_STATUS } from '../helpers/constants.js';
 
 const routes = express.Router();
 
 routes.use(requestLogger);
 
 routes.get(ROUTES.home, (req, res) => {
-    res.status(200).json({ success: true, message: 'Budget App Api' });
+    res.status(HTTP_STATUS.success).json({
+        success: true,
+        message: 'Budget App Api',
+    });
 });
 
 routes.use(`${ROUTES.api}${ROUTES.auth}`, auth);

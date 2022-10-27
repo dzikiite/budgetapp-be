@@ -1,63 +1,38 @@
-import prisma from '../../prisma/prisma.js';
+import subcategoryService from './subcategory-service.js';
 
 export const subcategoriesControllerGet = async (req, res) => {
     // TODO: Check querying category is associated to authenticate user
     const { id: categoryId } = req.params;
     const { userId } = req;
 
-    const category = await prisma.categories.findFirst({
-        where: { category_id: parseInt(categoryId), user_id: userId },
-        include: {
-            subcategories: true,
-        },
-    });
+    const subcategories = await subcategoryService.getSubcategories(
+        categoryId,
+        userId
+    );
 
-    if (!category.subcategories.length) {
-        return res.status(404).json({
-            success: false,
-            message: 'Subcategories not found',
-        });
+    if (!subcategories.success) {
+        return res.status(subcategories.status).json(subcategories);
     }
 
     return res.json({
         success: true,
-        subcategories: category.subcategories,
+        subcategories,
     });
 };
 
 export const subcategoriesControllerPost = async (req, res) => {
     const { id: categoryId } = req.params;
     const { body: newSubcategoryData, userId } = req;
-    const { subcategory_name } = newSubcategoryData;
 
-    const category = await prisma.categories.findFirst({
-        where: {
-            category_id: parseInt(categoryId),
-            user_id: userId,
-        },
-        include: {
-            subcategories: true,
-        },
-    });
+    const subcategory = await subcategoryService.addSubcategory(
+        categoryId,
+        userId,
+        newSubcategoryData
+    );
 
-    if (
-        category.subcategories.some(
-            (subcategory) => subcategory.subcategory_name === subcategory_name
-        )
-    ) {
-        res.status(400).json({
-            success: false,
-            message:
-                'For specified category exist subcategory with the same name',
-        });
+    if (!subcategory.success) {
+        return res.status(subcategory.status).json(subcategory);
     }
-
-    const subcategory = await prisma.subcategories.create({
-        data: {
-            subcategory_name,
-            category_id: parseInt(categoryId),
-        },
-    });
 
     res.json({
         success: true,
@@ -69,37 +44,19 @@ export const subcategoriesControllerUpdate = async (req, res) => {
     const { id: subcategoryId } = req.params;
     const { body: subcategoryNewData, userId } = req;
 
-    const subcategory = await prisma.subcategories.findFirst({
-        where: {
-            subcategory_id: parseInt(subcategoryId),
-        },
-        include: {
-            categories: true,
-        },
-    });
+    const subcategory = await subcategoryService.updateSubcategory(
+        subcategoryId,
+        userId,
+        subcategoryNewData
+    );
 
-    console.log('userIdCategory: ', subcategory.categories.user_id);
-
-    // TODO: Check the user is owner of the subcategory
-    if (subcategory?.categories?.user_id !== userId) {
-        res.status(401).json({
-            success: false,
-            message: 'There is no subcategory associated for specify user',
-        });
+    if (!subcategory.success) {
+        return res.status(subcategory.status).json(subcategory);
     }
-
-    const updatedSubcategory = await prisma.subcategories.update({
-        where: {
-            subcategory_id: parseInt(subcategoryId),
-        },
-        data: {
-            ...subcategoryNewData,
-        },
-    });
 
     res.json({
         success: true,
-        subcategory: updatedSubcategory,
+        subcategory,
     });
 };
 
@@ -107,42 +64,10 @@ export const subcategoriesControllerDelete = async (req, res) => {
     const { id: subcategoryId } = req.params;
     const { userId } = req;
 
-    const subcategory = await prisma.subcategories.findUnique({
-        where: { subcategory_id: parseInt(subcategoryId) },
-        include: { categories: true },
-    });
+    const response = await subcategoryService.deleteSubcategory(
+        subcategoryId,
+        userId
+    );
 
-    if (!subcategory) {
-        return res.sendStatus(404).json({
-            success: false,
-            message: 'Subcategory not found',
-        });
-    }
-
-    if (subcategory?.categories?.user_id !== userId) {
-        res.status(401).json({
-            success: false,
-            message: 'There is no subcategory associated for specify user',
-        });
-    }
-
-    try {
-        const deletedRow = await prisma.subcategories.delete({
-            where: { subcategory_id: parseInt(subcategoryId) },
-        });
-
-        if (deletedRow) {
-            return res.json({
-                success: true,
-                message: 'Subcategory deleted successfully',
-            });
-        }
-    } catch (err) {
-        console.log('Error: ', err);
-
-        return res.json({
-            success: false,
-            message: 'An error occurred',
-        });
-    }
+    res.json(response);
 };

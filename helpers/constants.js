@@ -11,3 +11,11 @@ export const ROUTES = {
     outflows: '/outflows',
     inflows: '/inflows',
 };
+
+export const HTTP_STATUS = {
+    unauthorized: 401,
+    badRequest: 400,
+    serverError: 500,
+    notFound: 404,
+    success: 200,
+};

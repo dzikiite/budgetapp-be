@@ -1,14 +1,13 @@
-import prisma from '../../prisma/prisma.js';
+import categoryService from './category-service.js';
+import { HTTP_STATUS } from '../../helpers/constants.js';
 
 export const categoriesControllerGet = async (req, res) => {
     const { userId } = req;
 
-    const categoriesData = await prisma.categories.findMany({
-        where: { user_id: userId },
-    });
+    const categoriesData = await categoryService.findCategories(userId);
 
     if (!categoriesData) {
-        return res.sendStatus(404).json({
+        return res.sendStatus(HTTP_STATUS.notFound).json({
             success: false,
             message: 'Categories not found',
         });
@@ -24,12 +23,10 @@ export const categoryControllerGet = async (req, res) => {
     const { userId } = req;
     const { id } = req.params;
 
-    const categoryData = await prisma.categories.findUnique({
-        where: { user_id: userId, category_id: id },
-    });
+    const categoryData = await categoryService.findCategories(userId, id);
 
     if (!categoryData) {
-        return res.sendStatus(404).json({
+        return res.sendStatus(HTTP_STATUS.notFound).json({
             success: false,
             message: 'Category not found',
         });
@@ -43,34 +40,17 @@ export const categoryControllerGet = async (req, res) => {
 
 export const categoryControllerPost = async (req, res) => {
     const { userId, body: newCategoryData } = req;
-    const { category_name } = newCategoryData;
 
-    const user = await prisma.users.findUnique({
-        where: {
-            user_id: userId,
-        },
-        include: { categories: true },
-    });
+    const category = await categoryService.addCategory(userId, newCategoryData);
 
-    if (
-        user.categories.some(
-            (category) => category.category_name === category_name
-        )
-    ) {
-        res.status(400).json({
+    if (!category) {
+        res.status(HTTP_STATUS.badRequest).json({
             success: false,
             message: 'There is a category with the same name',
         });
     }
 
-    const category = await prisma.categories.create({
-        data: {
-            category_name,
-            user_id: userId,
-        },
-    });
-
-    res.status(200).json({
+    res.status(HTTP_STATUS.success).json({
         success: true,
         category,
     });
@@ -80,34 +60,22 @@ export const categoryControllerUpdate = async (req, res) => {
     const { userId, body: categoryNewData } = req;
     const { id } = req.params;
 
-    const user = await prisma.users.findUnique({
-        where: { user_id: userId },
-        include: { categories: true },
-    });
-
-    const category = user.categories.filter(
-        (category) => category.category_id === parseInt(id)
-    )?.[0];
+    const category = await categoryService.updateCategory(
+        userId,
+        id,
+        categoryNewData
+    );
 
     if (!category) {
-        return res.status(404).json({
+        return res.status(HTTP_STATUS.notFound).json({
             success: false,
             message: 'Category not found',
         });
     }
 
-    const updatedCategory = await prisma.categories.update({
-        where: {
-            category_id: category.category_id,
-        },
-        data: {
-            ...categoryNewData,
-        },
-    });
-
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.success).json({
         success: true,
-        category: updatedCategory,
+        category,
     });
 };
 
@@ -115,36 +83,14 @@ export const categoryControllerDelete = async (req, res) => {
     const { userId } = req;
     const { id } = req.params;
 
-    const user = await prisma.users.findUnique({
-        where: { user_id: userId },
-        include: { categories: true },
-    });
+    const deletedRow = await categoryService.deleteCategory(userId, id);
 
-    const category = user.categories.filter(
-        (category) => category.category_id === parseInt(id)
-    )?.[0];
-
-    if (!category) {
-        return res.status(404).json({
-            success: false,
-            message: 'Category not found',
+    if (deletedRow) {
+        return res.json({
+            success: true,
+            message: 'Category deleted successfully',
         });
-    }
-
-    try {
-        const deletedRow = await prisma.categories.delete({
-            where: { category_id: category.category_id },
-        });
-
-        if (deletedRow) {
-            return res.json({
-                success: true,
-                message: 'Category deleted successfully',
-            });
-        }
-    } catch (err) {
-        console.log('Error: ', err);
-
+    } else {
         return res.json({
             success: false,
             message: 'An error occurred',

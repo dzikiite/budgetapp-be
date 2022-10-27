@@ -1,17 +1,18 @@
-import jwt from 'jsonwebtoken';
+import userService from '../src/user/user-service.js';
+import { HTTP_STATUS } from '../helpers/constants.js';
 
 export const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.sendStatus(401);
+        return res.sendStatus(HTTP_STATUS.unauthorized);
     }
 
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const user = userService.verifyUserByToken(token);
 
     if (!user) {
-        return res.sendStatus(400).json({
+        return res.sendStatus(HTTP_STATUS.badRequest).json({
             success: false,
             message: 'Something is wrong with token data',
         });
