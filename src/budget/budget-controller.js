@@ -1,4 +1,5 @@
 import budgetService from './budget-service.js';
+import { calculateBudgetsTotalAmount } from './calculate-total-amount.js';
 
 export const budgetsControllerGet = async (req, res) => {
     const { userId } = req;
@@ -9,9 +10,11 @@ export const budgetsControllerGet = async (req, res) => {
         res.status(budgets.status).json(budgets);
     }
 
+    const budgetsWithTotalAmount = await calculateBudgetsTotalAmount(budgets);
+
     return res.json({
         success: true,
-        budgets,
+        budgets: budgetsWithTotalAmount,
     });
 };
 

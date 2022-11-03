@@ -17,6 +17,23 @@ const getBudgets = async (userId) => {
     return budgets;
 };
 
+const getBudget = async (userId, budgetId) => {
+    const budget = await prisma.budgets.findFirst({
+        where: { user_id: userId, budget_id: parseInt(budgetId) },
+        include: { inflows: true },
+    });
+
+    if (!budget) {
+        return {
+            success: false,
+            status: HTTP_STATUS.notFound,
+            message: 'Budget not found',
+        };
+    }
+
+    return budget;
+};
+
 const addBudget = async (userId, budgetData) => {
     const { budget_name } = budgetData;
 
@@ -115,6 +132,7 @@ const deleteBudget = async (userId, budgetId) => {
 
 export default {
     getBudgets,
+    getBudget,
     addBudget,
     updateBudget,
     deleteBudget,

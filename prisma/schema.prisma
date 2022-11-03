@@ -8,16 +8,14 @@ datasource db {
 }
 
 model budgets {
-  budget_id    Int        @id @default(autoincrement())
-  budget_name  String
-  total_amount Float?     @default(0)
-  rest_amount  Float?     @default(0)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now()) @updatedAt()
-  user_id      Int?
-  users        users?     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-  inflows      inflows[]
-  outflows     outflows[]
+  budget_id   Int        @id @default(autoincrement())
+  budget_name String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt()
+  user_id     Int?
+  users       users?     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  inflows     inflows[]
+  outflows    outflows[]
 }
 
 model categories {
