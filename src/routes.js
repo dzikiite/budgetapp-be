@@ -6,6 +6,7 @@ import categories from './category/index.js';
 import subcategories from './subcategory/index.js';
 import budgets from './budget/index.js';
 import inflow from './inflow/index.js';
+import outflow from './outflow/index.js';
 import { ROUTES, HTTP_STATUS } from '../helpers/constants.js';
 
 const routes = express.Router();
@@ -25,5 +26,6 @@ routes.use(ROUTES.api, categories);
 routes.use(ROUTES.api, subcategories);
 routes.use(ROUTES.api, budgets);
 routes.use(ROUTES.api, inflow);
+routes.use(ROUTES.api, outflow);
 
 export default routes;

@@ -1,4 +1,5 @@
 import subcategoryService from './subcategory-service.js';
+import { calculateRestAmount } from './calculate-rest-amount.js';
 
 export const subcategoriesControllerGet = async (req, res) => {
     // TODO: Check querying category is associated to authenticate user
@@ -10,13 +11,17 @@ export const subcategoriesControllerGet = async (req, res) => {
         userId
     );
 
-    if (!subcategories.success) {
+    if (subcategories?.success === false) {
         return res.status(subcategories.status).json(subcategories);
     }
 
+    const subcategoriesWithRestAmount = await calculateRestAmount(
+        subcategories
+    );
+
     return res.json({
         success: true,
-        subcategories,
+        subcategories: subcategoriesWithRestAmount,
     });
 };
 
@@ -30,7 +35,7 @@ export const subcategoriesControllerPost = async (req, res) => {
         newSubcategoryData
     );
 
-    if (!subcategory.success) {
+    if (subcategory?.success === false) {
         return res.status(subcategory.status).json(subcategory);
     }
 
@@ -50,7 +55,7 @@ export const subcategoriesControllerUpdate = async (req, res) => {
         subcategoryNewData
     );
 
-    if (!subcategory.success) {
+    if (subcategory?.success === false) {
         return res.status(subcategory.status).json(subcategory);
     }
 

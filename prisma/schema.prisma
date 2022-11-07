@@ -55,7 +55,6 @@ model subcategories {
   subcategory_name        String
   subcategory_description String
   allocated_amount        Float?      @default(0)
-  rest_amount             Float?      @default(0)
   category_id             Int?
   categories              categories? @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: Cascade)
   outflows                outflows[]

@@ -48,8 +48,8 @@ const addSubcategory = async (categoryId, userId, subcategoryData) => {
 
     const subcategory = await prisma.subcategories.create({
         data: {
-            category_id: parseInt(categoryId),
             ...subcategoryData,
+            category_id: parseInt(categoryId),
         },
     });
 
