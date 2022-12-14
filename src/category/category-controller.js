@@ -1,4 +1,5 @@
 import categoryService from './category-service.js';
+import { calculateRestAmount } from '../subcategory/calculate-rest-amount.js';
 import { HTTP_STATUS } from '../../helpers/constants.js';
 
 export const categoriesControllerGet = async (req, res) => {
@@ -13,9 +14,19 @@ export const categoriesControllerGet = async (req, res) => {
         });
     }
 
+    const categoriesWithSubcategories = await Promise.all(
+        categoriesData.map(async (category) => {
+            const subcategoriesWithRestAmount = await calculateRestAmount(
+                category.subcategories
+            );
+
+            return { ...category, subcategories: subcategoriesWithRestAmount };
+        })
+    );
+
     return res.json({
         success: true,
-        categoriesData,
+        categoriesData: categoriesWithSubcategories,
     });
 };
 

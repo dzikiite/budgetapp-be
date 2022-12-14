@@ -6,10 +6,12 @@ const findCategories = async (userId, categoryId) => {
     if (categoryId) {
         categories = await prisma.categories.findUnique({
             where: { user_id: userId, category_id: categoryId },
+            include: { subcategories: true },
         });
     } else {
         categories = await prisma.categories.findMany({
             where: { user_id: userId },
+            include: { subcategories: true },
         });
     }
 

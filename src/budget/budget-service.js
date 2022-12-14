@@ -52,8 +52,6 @@ const addBudget = async (userId, budgetData) => {
     const budget = await prisma.budgets.create({
         data: {
             budget_name,
-            total_amount: 0.0,
-            rest_amount: 0.0,
             user_id: userId,
         },
     });
