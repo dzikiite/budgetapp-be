@@ -5,6 +5,7 @@ import {
     subcategoriesControllerPost,
     subcategoriesControllerUpdate,
     subcategoriesControllerDelete,
+    subcategoriesControllerAmountUpdate,
 } from './subcategory-controller.js';
 import { authenticateToken } from '../../middlewares/authenticate-token.js';
 import { ROUTES } from '../../helpers/constants.js';
@@ -30,6 +31,11 @@ subcategories.delete(
     `${ROUTES.subcategories}/:id`,
     authenticateToken,
     subcategoriesControllerDelete
+);
+subcategories.put(
+    `${ROUTES.subcategories}/${ROUTES.inflows}:id`,
+    authenticateToken,
+    subcategoriesControllerAmountUpdate
 );
 
 export default subcategories;

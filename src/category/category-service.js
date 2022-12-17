@@ -4,14 +4,17 @@ const findCategories = async (userId, categoryId) => {
     let categories;
 
     if (categoryId) {
-        categories = await prisma.categories.findUnique({
-            where: { user_id: userId, category_id: categoryId },
-            include: { subcategories: true },
+        categories = await prisma.categoriesTemplates.findUnique({
+            where: {
+                user_id: userId,
+                category_template_id: parseInt(categoryId),
+            },
+            include: { subcategories_templates: true },
         });
     } else {
-        categories = await prisma.categories.findMany({
+        categories = await prisma.categoriesTemplates.findMany({
             where: { user_id: userId },
-            include: { subcategories: true },
+            include: { subcategories_templates: true },
         });
     }
 
@@ -25,18 +28,18 @@ const addCategory = async (userId, categoryData) => {
         where: {
             user_id: userId,
         },
-        include: { categories: true },
+        include: { categories_templates: true },
     });
 
     if (
-        user.categories.some(
+        user.categories_templates.some(
             (category) => category.category_name === category_name
         )
     ) {
         return null;
     }
 
-    const category = await prisma.categories.create({
+    const category = await prisma.categoriesTemplates.create({
         data: {
             category_name,
             user_id: userId,
@@ -49,20 +52,20 @@ const addCategory = async (userId, categoryData) => {
 const updateCategory = async (userId, categoryId, categoryNewData) => {
     const user = await prisma.users.findUnique({
         where: { user_id: userId },
-        include: { categories: true },
+        include: { categories_templates: true },
     });
 
-    const category = user?.categories?.filter(
-        (category) => category.category_id === parseInt(categoryId)
+    const category = user?.categories_templates?.filter(
+        (category) => category.category_template_id === parseInt(categoryId)
     )?.[0];
 
     if (!category) {
         return null;
     }
 
-    const updatedCategory = await prisma.categories.update({
+    const updatedCategory = await prisma.categoriesTemplates.update({
         where: {
-            category_id: category.category_id,
+            category_template_id: category.category_template_id,
         },
         data: {
             ...categoryNewData,
@@ -75,11 +78,11 @@ const updateCategory = async (userId, categoryId, categoryNewData) => {
 const deleteCategory = async (userId, categoryId) => {
     const user = await prisma.users.findUnique({
         where: { user_id: userId },
-        include: { categories: true },
+        include: { categories_templates: true },
     });
 
-    const category = user?.categories?.filter(
-        (category) => category.category_id === parseInt(categoryId)
+    const category = user?.categories_templates?.filter(
+        (category) => category.category_template_id === parseInt(categoryId)
     )?.[0];
 
     if (!category) {
@@ -87,8 +90,8 @@ const deleteCategory = async (userId, categoryId) => {
     }
 
     try {
-        const deletedRow = await prisma.categories.delete({
-            where: { category_id: category.category_id },
+        const deletedRow = await prisma.categoriesTemplates.delete({
+            where: { category_template_id: category.category_template_id },
         });
 
         return deletedRow;

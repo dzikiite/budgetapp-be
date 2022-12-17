@@ -2,14 +2,14 @@ import prisma from '../../prisma/prisma.js';
 import { HTTP_STATUS } from '../../helpers/constants.js';
 
 const getSubcategories = async (categoryId, userId) => {
-    const category = await prisma.categories.findFirst({
-        where: { category_id: parseInt(categoryId), user_id: userId },
+    const category = await prisma.categoriesTemplates.findFirst({
+        where: { category_template_id: parseInt(categoryId), user_id: userId },
         include: {
-            subcategories: true,
+            subcategories_templates: true,
         },
     });
 
-    if (!category.subcategories.length) {
+    if (!category.subcategories_templates.length) {
         return {
             success: false,
             message: 'Subcategories not found',
@@ -17,24 +17,24 @@ const getSubcategories = async (categoryId, userId) => {
         };
     }
 
-    return category.subcategories;
+    return category.subcategories_templates;
 };
 
 const addSubcategory = async (categoryId, userId, subcategoryData) => {
     const { subcategory_name } = subcategoryData;
 
-    const category = await prisma.categories.findFirst({
+    const category = await prisma.categoriesTemplates.findFirst({
         where: {
-            category_id: parseInt(categoryId),
+            category_template_id: parseInt(categoryId),
             user_id: userId,
         },
         include: {
-            subcategories: true,
+            subcategories_templates: true,
         },
     });
 
     if (
-        category.subcategories.some(
+        category.subcategories_templates.some(
             (subcategory) => subcategory.subcategory_name === subcategory_name
         )
     ) {
@@ -46,10 +46,10 @@ const addSubcategory = async (categoryId, userId, subcategoryData) => {
         };
     }
 
-    const subcategory = await prisma.subcategories.create({
+    const subcategory = await prisma.subcategoriesTemplates.create({
         data: {
             ...subcategoryData,
-            category_id: parseInt(categoryId),
+            category_template_id: parseInt(categoryId),
         },
     });
 
@@ -57,17 +57,16 @@ const addSubcategory = async (categoryId, userId, subcategoryData) => {
 };
 
 const updateSubcategory = async (subcategoryId, userId, subcategoryNewData) => {
-    const subcategory = await prisma.subcategories.findFirst({
+    const subcategory = await prisma.subcategoriesTemplates.findFirst({
         where: {
-            subcategory_id: parseInt(subcategoryId),
+            subcategory_template_id: parseInt(subcategoryId),
         },
         include: {
-            categories: true,
+            categories_templates: true,
         },
     });
 
-    // TODO: Check the user is owner of the subcategory
-    if (subcategory?.categories?.user_id !== userId) {
+    if (subcategory?.categories_templates?.user_id !== userId) {
         return {
             success: false,
             message: 'There is no subcategory associated for specify user',
@@ -75,9 +74,9 @@ const updateSubcategory = async (subcategoryId, userId, subcategoryNewData) => {
         };
     }
 
-    const updatedSubcategory = await prisma.subcategories.update({
+    const updatedSubcategory = await prisma.subcategoriesTemplates.update({
         where: {
-            subcategory_id: parseInt(subcategoryId),
+            subcategory_template_id: parseInt(subcategoryId),
         },
         data: {
             ...subcategoryNewData,
@@ -88,9 +87,9 @@ const updateSubcategory = async (subcategoryId, userId, subcategoryNewData) => {
 };
 
 const deleteSubcategory = async (subcategoryId, userId) => {
-    const subcategory = await prisma.subcategories.findUnique({
-        where: { subcategory_id: parseInt(subcategoryId) },
-        include: { categories: true },
+    const subcategory = await prisma.subcategoriesTemplates.findUnique({
+        where: { subcategory_template_id: parseInt(subcategoryId) },
+        include: { categories_templates: true },
     });
 
     if (!subcategory) {
@@ -101,7 +100,7 @@ const deleteSubcategory = async (subcategoryId, userId) => {
         };
     }
 
-    if (subcategory?.categories?.user_id !== userId) {
+    if (subcategory?.categories_templates?.user_id !== userId) {
         return {
             success: false,
             message: 'There is no subcategory associated for specify user',
@@ -110,8 +109,8 @@ const deleteSubcategory = async (subcategoryId, userId) => {
     }
 
     try {
-        const deletedRow = await prisma.subcategories.delete({
-            where: { subcategory_id: parseInt(subcategoryId) },
+        const deletedRow = await prisma.subcategoriesTemplates.delete({
+            where: { subcategory_template_id: parseInt(subcategoryId) },
         });
 
         if (deletedRow) {
@@ -130,9 +129,58 @@ const deleteSubcategory = async (subcategoryId, userId) => {
     }
 };
 
+const verifySubcategoryByUser = async (subcategoryId, userId) => {
+    const subcategory = prisma.subcategories.findFirst({
+        where: { subcategory_id: parseInt(subcategoryId) },
+        include: {
+            categories: {
+                include: {
+                    budgets: {
+                        include: {
+                            users: {
+                                select: {
+                                    user_id: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    const isSubcategoryForSpecifiedUser =
+        subcategory?.categories?.[0]?.budgets?.[0]?.users?.[0]?.user_id ===
+        userId;
+
+    return isSubcategoryForSpecifiedUser;
+};
+
+const updateAmount = async (subcategoryId, userId, amount) => {
+    const verify = await verifySubcategoryByUser(subcategoryId, userId);
+
+    if (!verify) {
+        return {
+            success: false,
+            message: 'There is no subcategory for specified user',
+            status: HTTP_STATUS.unauthorized,
+        };
+    }
+
+    const subcategory = await prisma.subcategories.update({
+        where: { subcategory_id: parseInt(subcategoryId) },
+        data: {
+            allocated_amount: parseFloat(amount),
+        },
+    });
+
+    return subcategory;
+};
+
 export default {
     getSubcategories,
     addSubcategory,
     updateSubcategory,
     deleteSubcategory,
+    updateAmount,
 };

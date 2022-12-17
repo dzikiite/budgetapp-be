@@ -4,6 +4,18 @@ import { HTTP_STATUS } from '../../helpers/constants.js';
 const getBudgets = async (userId) => {
     const budgets = await prisma.budgets.findMany({
         where: { user_id: userId },
+        include: {
+            inflows: true,
+            categories: {
+                include: {
+                    subcategories: {
+                        include: {
+                            outflows: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     if (!budgets) {
@@ -20,7 +32,18 @@ const getBudgets = async (userId) => {
 const getBudget = async (userId, budgetId) => {
     const budget = await prisma.budgets.findFirst({
         where: { user_id: userId, budget_id: parseInt(budgetId) },
-        include: { inflows: true },
+        include: {
+            inflows: true,
+            categories: {
+                include: {
+                    subcategories: {
+                        include: {
+                            outflows: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
     if (!budget) {
@@ -49,10 +72,39 @@ const addBudget = async (userId, budgetData) => {
         };
     }
 
+    const categoriesTemplates = await prisma.categoriesTemplates.findMany({
+        where: { user_id: userId },
+        include: { subcategories_templates: true },
+    });
+
     const budget = await prisma.budgets.create({
         data: {
             budget_name,
             user_id: userId,
+            categories: {
+                create: categoriesTemplates.map((category) => {
+                    const categoryCloned = { ...category };
+                    const subcategories = category.subcategories_templates;
+                    delete categoryCloned.subcategories_templates;
+                    delete categoryCloned.category_template_id;
+                    delete categoryCloned.user_id;
+
+                    return {
+                        ...categoryCloned,
+                        subcategories: {
+                            create: subcategories.map((subcategory) => {
+                                const subcategoryCloned = { ...subcategory };
+                                delete subcategoryCloned.subcategory_template_id;
+                                delete subcategoryCloned.category_template_id;
+
+                                return {
+                                    ...subcategoryCloned,
+                                };
+                            }),
+                        },
+                    };
+                }),
+            },
         },
     });
 

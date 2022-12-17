@@ -7,25 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model budgets {
-  budget_id   Int        @id @default(autoincrement())
-  budget_name String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt()
-  user_id     Int?
-  users       users?     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-  inflows     inflows[]
-  outflows    outflows[]
+model users {
+  user_id              Int                   @id @default(autoincrement())
+  firstname            String
+  lastname             String
+  email                String                @unique
+  password             String
+  token                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now()) @updatedAt
+  budgets              budgets[]
+  categories_templates categoriesTemplates[]
 }
 
-model categories {
-  category_id   Int             @id @default(autoincrement())
-  category_name String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now()) @updatedAt
-  user_id       Int
-  users         users?          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
-  subcategories subcategories[]
+model categoriesTemplates {
+  category_template_id    Int                      @id @default(autoincrement())
+  category_name           String
+  user_id                 Int
+  users                   users?                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  subcategories_templates subcategoriesTemplates[]
+}
+
+model subcategoriesTemplates {
+  subcategory_template_id Int                  @id @default(autoincrement())
+  subcategory_name        String
+  subcategory_description String
+  category_template_id    Int
+  categories_templates    categoriesTemplates? @relation(fields: [category_template_id], references: [category_template_id])
+}
+
+model budgets {
+  budget_id   Int          @id @default(autoincrement())
+  budget_name String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt()
+  user_id     Int?
+  users       users?       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: Cascade)
+  inflows     inflows[]
+  categories  categories[]
 }
 
 model inflows {
@@ -38,37 +57,32 @@ model inflows {
   budgets          budgets? @relation(fields: [budget_id], references: [budget_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model outflows {
-  budget_outflow_id Int            @id @default(autoincrement())
-  name              String?
-  amount            Float?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @default(now()) @updatedAt
-  budget_id         Int?
-  subcategory_id    Int?
-  budgets           budgets?       @relation(fields: [budget_id], references: [budget_id])
-  subcategories     subcategories? @relation(fields: [subcategory_id], references: [subcategory_id], onDelete: Cascade, onUpdate: Cascade)
+model categories {
+  category_id   Int             @id @default(autoincrement())
+  category_name String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
+  budget_id     Int
+  budgets       budgets?        @relation(fields: [budget_id], references: [budget_id], onDelete: Cascade, onUpdate: Cascade)
+  subcategories subcategories[]
 }
 
 model subcategories {
   subcategory_id          Int         @id @default(autoincrement())
   subcategory_name        String
   subcategory_description String
-  allocated_amount        Float?      @default(0)
+  allocated_amount        Float       @default(0.0)
   category_id             Int?
   categories              categories? @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: Cascade)
   outflows                outflows[]
 }
 
-model users {
-  user_id    Int          @id @default(autoincrement())
-  firstname  String
-  lastname   String
-  email      String       @unique
-  password   String
-  token      String?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now()) @updatedAt
-  budgets    budgets[]
-  categories categories[]
+model outflows {
+  budget_outflow_id Int            @id @default(autoincrement())
+  name              String?
+  amount            Float?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now()) @updatedAt
+  subcategory_id    Int
+  subcategories     subcategories? @relation(fields: [subcategory_id], references: [subcategory_id])
 }
