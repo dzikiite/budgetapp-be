@@ -18,7 +18,7 @@ export const authenticateToken = (req, res, next) => {
         });
     }
 
-    req.userId = parseInt(user);
+    req.userId = parseInt(user.userId);
 
     next();
 };

@@ -1,31 +1,10 @@
 import prisma from '../../prisma/prisma.js';
+import subcategoryService from '../subcategory/subcategory-service.js';
 import { HTTP_STATUS } from '../../helpers/constants.js';
 
 const verifyOutflowUser = async (budgetId, subcategoryId, userId) => {
-    const user = await prisma.users.findUnique({
-        where: { user_id: userId },
-        include: {
-            budgets: {
-                include: {
-                    categories: {
-                        include: {
-                            subcategories: true,
-                        },
-                    },
-                },
-            },
-        },
-    });
-
-    const { budgets } = user;
-
-    const isBudgetAndSubcategoryForSpecifedUser = budgets.categories.forEach(
-        (category) =>
-            category.subcategories.some(
-                (subcategory) =>
-                    subcategory.subcategory_id === parseInt(subcategoryId)
-            )
-    );
+    const isBudgetAndSubcategoryForSpecifedUser =
+        subcategoryService.verifySubcategoryByUser(subcategoryId, userId);
 
     if (!isBudgetAndSubcategoryForSpecifedUser) {
         return {

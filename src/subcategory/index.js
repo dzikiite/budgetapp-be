@@ -33,7 +33,7 @@ subcategories.delete(
     subcategoriesControllerDelete
 );
 subcategories.put(
-    `${ROUTES.subcategories}/${ROUTES.inflows}:id`,
+    `${ROUTES.subcategories}${ROUTES.inflows}/:id`,
     authenticateToken,
     subcategoriesControllerAmountUpdate
 );

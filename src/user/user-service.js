@@ -82,8 +82,9 @@ const login = async (userData) => {
 
     if (await bcrypt.compare(password, user.password)) {
         const token = jwt.sign(
-            JSON.stringify(user.user_id),
-            process.env.JWT_SECRET
+            { userId: JSON.stringify(user.user_id) },
+            process.env.JWT_SECRET,
+            { expiresIn: '10800s' }
         );
 
         const updatedUser = await prisma.users.update({

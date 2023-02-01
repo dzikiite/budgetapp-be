@@ -130,28 +130,19 @@ const deleteSubcategory = async (subcategoryId, userId) => {
 };
 
 const verifySubcategoryByUser = async (subcategoryId, userId) => {
-    const subcategory = prisma.subcategories.findFirst({
+    const subcategory = await prisma.subcategories.findFirst({
         where: { subcategory_id: parseInt(subcategoryId) },
         include: {
             categories: {
                 include: {
-                    budgets: {
-                        include: {
-                            users: {
-                                select: {
-                                    user_id: true,
-                                },
-                            },
-                        },
-                    },
+                    budgets: true,
                 },
             },
         },
     });
 
     const isSubcategoryForSpecifiedUser =
-        subcategory?.categories?.[0]?.budgets?.[0]?.users?.[0]?.user_id ===
-        userId;
+        subcategory?.categories?.budgets?.user_id === userId;
 
     return isSubcategoryForSpecifiedUser;
 };
@@ -183,4 +174,5 @@ export default {
     updateSubcategory,
     deleteSubcategory,
     updateAmount,
+    verifySubcategoryByUser,
 };

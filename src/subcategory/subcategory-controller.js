@@ -84,5 +84,8 @@ export const subcategoriesControllerAmountUpdate = async (req, res) => {
         amount
     );
 
-    res.json(response);
+    return res.json({
+        success: true,
+        subcategory: response,
+    });
 };
